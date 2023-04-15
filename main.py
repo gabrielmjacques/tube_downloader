@@ -22,20 +22,28 @@ def ChooseDir():
 
 
 def DownloadVideo():
+    print(res_var.get())
     try:
         yt = YouTube(url_var.get())
         
         status_label['foreground'] = 'black'
         status_label['text'] = f'Baixando Video: {yt.title} de {yt.author}. . .'
         
-        stream = yt.streams.filter(file_extension='mp4').get_highest_resolution()
-        stream.download(path_var.get())
+        stream = yt.streams.filter(res=res_var.get(), progressive=True).first()
+        
+        if stream is None:
+            status_label['foreground'] = 'red'
+            status_label['text'] = 'Stream com resolução escolhida não encontrado'
+            return
+        
+        stream.download(output_path=path_var.get(), filename=f'{yt.title}_{res_var.get()}.mp4')
         
         status_label['foreground'] = 'green'
         status_label['text'] = yt.title + ' Baixado com Sucesso'
     except:
         status_label['foreground'] = 'red'
-        status_label['text'] = 'Erro: URL Inválida'
+        status_label['text'] = 'Erro ao baixar o vídeo, tente novamente'        
+
         
 
 
@@ -87,9 +95,24 @@ path_button = ttk.Button(mainframe, text='Procurar')
 path_button['command'] = ChooseDir
 path_button.grid(column=1, row=3, sticky=NSEW)
 
+# Frame de Resolução
+res_frame = Frame(root, padx=50, pady=10, background='white')
+res_frame.grid(column=0, row=3)
+
+res_var = StringVar()
+res_var.set("720p")
+res480_radio = ttk.Radiobutton(res_frame, text="480p", value="480p", variable=res_var)
+res480_radio.grid(column=0, row=0)
+
+res720_radio = ttk.Radiobutton(res_frame, text="720p", value="720p", variable=res_var)
+res720_radio.grid(column=1, row=0)
+
+res1080_radio = ttk.Radiobutton(res_frame, text="1080p", value="1080p", variable=res_var)
+res1080_radio.grid(column=2, row=0)
+
 # Download Frame
 buttons_frame = Frame(root, padx=50, pady=10, background='white')
-buttons_frame.grid(column=0, row=2)
+buttons_frame.grid(column=0, row=4)
 
 download_button = ttk.Button(buttons_frame, text='Download', width=100)
 download_button['command'] = lambda: threading.Thread(target=DownloadVideo).start()
