@@ -9,6 +9,9 @@ from pytube import YouTube
 # - os - para escolher onde salvar o vídeo
 import os
 
+# - threading - para executar o download em outra thread, evitando que o programa trave
+import threading
+
 
 
 # Funções
@@ -17,13 +20,20 @@ def ChooseDir():
     print(path)
     path_var.set(path)
 
-def DownloadVideo(URL):
-    yt = YouTube(URL)
+
+def DownloadVideo():
+    try:
+        yt = YouTube(url_var.get())
         
-    stream = yt.streams.get_highest_resolution()
-    stream.download(path_var.get())
-    
-    status_label['text'] = 'Video |' + yt.title + '| Baixado com Sucesso'
+        status_label['text'] = f'Baixando Video: {yt.title} de {yt.author}'
+        
+        stream = yt.streams.filter(file_extension='mp4').get_highest_resolution()
+        stream.download(path_var.get())
+        
+        status_label['text'] = yt.title + ' Baixado com Sucesso'
+    except:
+        status_label['text'] = 'Erro: URL Inválida'
+        
 
 
 root = Tk()
@@ -68,7 +78,7 @@ path_button['command'] = ChooseDir
 path_button.grid(column=1, row=3, sticky=NSEW)
 
 download_button = ttk.Button(mainframe, text='Download')
-download_button['command'] = lambda: DownloadVideo(url_var.get())
+download_button['command'] = lambda: threading.Thread(target=DownloadVideo).start()
 download_button.grid(column=0, columnspan=2, row=4, sticky=EW)
 
 
