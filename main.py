@@ -29,14 +29,18 @@ def DownloadVideo():
         status_label['foreground'] = 'black'
         status_label['text'] = f'Baixando Video: {yt.title} de {yt.author}. . .'
         
-        stream = yt.streams.filter(res=res_var.get(), progressive=True).first()
+        if res_var.get() == 'audio':
+            stream = yt.streams.filter(only_audio=True).first()
+            stream.download(output_path=path_var.get(), filename=f'{yt.title}_audio.mp3')
+        else:
+            stream = yt.streams.filter(res=res_var.get(), progressive=True).first()
+            stream.download(output_path=path_var.get(), filename=f'{yt.title}_{res_var.get()}.mp4')
         
         if stream is None:
             status_label['foreground'] = 'red'
             status_label['text'] = 'Stream com resolução escolhida não encontrado'
             return
         
-        stream.download(output_path=path_var.get(), filename=f'{yt.title}_{res_var.get()}.mp4')
         
         status_label['foreground'] = 'green'
         status_label['text'] = yt.title + ' Baixado com Sucesso'
@@ -101,14 +105,18 @@ res_frame.grid(column=0, row=3)
 
 res_var = StringVar()
 res_var.set("720p")
+
+audio_radio = ttk.Radiobutton(res_frame, text="Audio", value="audio", variable=res_var)
+audio_radio.grid(column=0, row=0)
+
 res480_radio = ttk.Radiobutton(res_frame, text="480p", value="480p", variable=res_var)
-res480_radio.grid(column=0, row=0)
+res480_radio.grid(column=1, row=0)
 
 res720_radio = ttk.Radiobutton(res_frame, text="720p", value="720p", variable=res_var)
-res720_radio.grid(column=1, row=0)
+res720_radio.grid(column=2, row=0)
 
 res1080_radio = ttk.Radiobutton(res_frame, text="1080p", value="1080p", variable=res_var)
-res1080_radio.grid(column=2, row=0)
+res1080_radio.grid(column=3, row=0)
 
 # Download Frame
 buttons_frame = Frame(root, padx=50, pady=10, background='white')
